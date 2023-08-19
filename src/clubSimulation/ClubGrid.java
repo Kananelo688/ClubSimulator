@@ -3,7 +3,7 @@
 
 package clubSimulation;
 import java.lang.Thread;
-
+import java.util.concurrent.atomic.AtomicBoolean;
 //This class represents the club as a grid of GridBlocks
 public class ClubGrid {
 	private GridBlock [][] Blocks;
@@ -15,9 +15,9 @@ public class ClubGrid {
 	private GridBlock entrance; //hard coded entrance
 	private final static int minX =5;//minimum x dimension
 	private final static int minY =5;//minimum y dimension
-	
+	public static AtomicBoolean andre; //checks if andrew has entered the gate
 	private PeopleCounter counter;
-	
+	public AtomicBoolean isBarMan;//check if Andrew has arrived at the Bar
 	ClubGrid(int x, int y, int [] exitBlocks,PeopleCounter c) throws InterruptedException {
 		if (x<minX) x=minX; //minimum x
 		if (y<minY) y=minY; //minimum x
@@ -28,6 +28,8 @@ public class ClubGrid {
 		this.initGrid(exitBlocks);
 		entrance=Blocks[getMaxX()/2][0];
 		counter=c;
+        andre=new AtomicBoolean(false);
+        isBarMan=new AtomicBoolean(true);
 		}
 	
 	//initialise the grsi, creating all the GridBlocks
@@ -72,18 +74,18 @@ public class ClubGrid {
 		return true;
 	}
 	//You need to check if limit of people have been exeeded before(and wait if that the case) // you need to lock! spin-wait. 
-	synchronized public GridBlock enterClub(PeopleLocation myLocation) throws InterruptedException{
-        counter.personArrived();
+	synchronized public GridBlock enterClub(PeopleLocation myLocation) throws InterruptedException{        
+        if(!andre.get())counter.personArrived();
         while(counter.overCapacity()){
             this.wait();        
         }
 		entrance.get(myLocation.getID());
-	    counter.personEntered(); //add to counter
+	    if (!andre.get()) counter.personEntered(); //add to counter
 		myLocation.setLocation(entrance);
 		myLocation.setInRoom(true);
 		return entrance;
 	}
-	public GridBlock move(GridBlock currentBlock,int step_x, int step_y,PeopleLocation myLocation) throws InterruptedException {  //try to move in 
+	synchronized public GridBlock move(GridBlock currentBlock,int step_x, int step_y,PeopleLocation myLocation) throws InterruptedException {  //try to move in 
 		
 		int c_x= currentBlock.getX();
 		int c_y= currentBlock.getY();
@@ -99,8 +101,9 @@ public class ClubGrid {
 
 		if ((new_x==currentBlock.getX())&&(new_y==currentBlock.getY())) //not actually moving
 			return currentBlock;
-		 
+		if(new_y==bar_y && !isBarMan.get()){new_y=bar_y-1;} //Threads shouldn't move to the Counter
 		GridBlock newBlock = Blocks[new_x][new_y];
+      
 		
 		if (!newBlock.get(myLocation.getID())) return currentBlock; //stay where you are
 			

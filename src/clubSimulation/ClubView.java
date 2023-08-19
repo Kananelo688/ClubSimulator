@@ -84,7 +84,7 @@ public class ClubView extends JPanel implements Runnable {
 			 //barman should go here
             //draw the bar man
              if(barpersonLocation !=null&&barpersonLocation.inRoom()){
-                  g.setColor(barpersonLocation.getColor()); //paint bar man as red dude   
+                  g.setColor(Color.red); //paint bar man as red dude   
                   x=barpersonLocation.getX()*wIncr;
                   y=barpersonLocation.getY()*hIncr;
                   g.fillOval(x+wIncr/4,y+hIncr/4,wIncr/2,hIncr/2);

@@ -11,12 +11,13 @@ public class GridBlock {
 	private final boolean isBar; //is it a bar block?
 	private final boolean isDance; //is it the dance area?
 	private int [] coords; // the coordinate of the block.
-	
+	private boolean served;
 	GridBlock(boolean exitBlock, boolean barBlock, boolean danceBlock) throws InterruptedException {
 		isExit=exitBlock;
 		isBar=barBlock;
 		isDance=danceBlock;
 		isOccupied= -1;
+        served=false;
 	}
 	
 	GridBlock(int x, int y, boolean exitBlock, boolean refreshBlock, boolean danceBlock) throws InterruptedException
@@ -24,35 +25,40 @@ public class GridBlock {
 		this(exitBlock,refreshBlock,danceBlock);
 		coords = new int [] {x,y};
 	}
+    synchronized void setY(int y){coords[1]=y;}
+    synchronized public boolean servedDrink(){return served;}
+    synchronized public void markServed(){served=true;}
+    synchronized  public void markUnserved(){served=false;}
+    public void setIsOccupied(int i){isOccupied=i;}
 	
-	public  int getX() {return coords[0];}  
+	synchronized public  int getX() {return coords[0];}  
 	
-	public  int getY() {return coords[1];}
+	synchronized public  int getY() {return coords[1];}
 	
-	public  boolean get(int threadID) throws InterruptedException {
+	synchronized public  boolean get(int threadID) throws InterruptedException {
 		if (isOccupied==threadID) return true; //thread Already in this block
 		if (isOccupied>=0) return false; //space is occupied
 		isOccupied=threadID;  //set ID to thread that had block
 		return true;
 	}
 		
-	public void release() {
+	synchronized public void release() {
 		isOccupied=-1;
 	}
 	
-	public  boolean occupied() {
+	synchronized public  boolean occupied() {
 		if(isOccupied==-1) return false;
 		return true;
 	}
 	
-	public boolean isExit() {
+	synchronized public boolean isExit() {
 		return isExit;	
 	}
 
-	public   boolean isBar() {
+	synchronized public   boolean isBar() {
 		return isBar;
 	}
-	public   boolean isDanceFloor() {
+	synchronized public   boolean isDanceFloor() {
 		return isDance;
 	}
 }

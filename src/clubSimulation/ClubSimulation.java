@@ -168,8 +168,9 @@ public class ClubSimulation {
         		int movingSpeed=(int)(Math.random() * (maxWait-minWait)+minWait); //range of speeds for customers
     			patrons[i] = new Clubgoer(i,peopleLocations[i],movingSpeed);
     		}
-		barman=new AndreBarman(-10,(int)(Math.random()*(maxWait-minWait)+minWait));
-        barman.setLocation(new PeopleLocation(-10));//set location of Andre        
+		barman=new AndreBarman(Integer.MAX_VALUE,(int)(Math.random()*(maxWait-minWait)+minWait));
+        barman.setLocation(new PeopleLocation(Integer.MAX_VALUE));//set location of Andre  
+        barman.setClub(clubGrid);      
         barman.start();
 		setupGUI(frameX, frameY,exit);  //Start Panel thread - for drawing animation
         //start all the threads
