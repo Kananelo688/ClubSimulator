@@ -24,6 +24,8 @@ public class Clubgoer extends Thread {
 	
 	private int ID; //thread ID 
 
+    public static CountDownLatch latch; // A count down latch to make all threads weight untill
+
 	
 	Clubgoer( int ID,  PeopleLocation loc,  int speed) {
 		this.ID=ID;
@@ -56,8 +58,9 @@ public class Clubgoer extends Thread {
 	private void checkPause() throws InterruptedException
      {
         
-		while(ClubSimulation.paused){
+		while(ClubSimulation.paused.get()){
             sleep(100);// sleep thread for 0.1s before next check if pause pressed
+  
         }  	
         
     }   
@@ -66,10 +69,7 @@ public class Clubgoer extends Thread {
     */
 	private void startSim() throws InterruptedException
      {
-       while(!ClubSimulation.startBPressed){
-           sleep(100); // sleep thread for 0.1s before cheking if button pressed
-       }
-        
+            latch.await(); // wait untill the gate is released.
     }
 	
 	//get drink at bar
@@ -143,8 +143,6 @@ public class Clubgoer extends Thread {
 			sleep(movingSpeed*(rand.nextInt(100)+1)); //arriving takes a while
 			checkPause();
 			myLocation.setArrived();
-            club.incrWaighting();//increment people outside after arriving
-			//System.out.println("Thread "+ this.ID + " arrived at club"); //output for checking
 			checkPause(); //check whethere have been asked to pause
 			enterClub();
 			while (inRoom) {	
@@ -192,6 +190,7 @@ public class Clubgoer extends Thread {
 
 		} catch (InterruptedException e1) {  //do nothing
 		}
+        
 	}
 	
 }

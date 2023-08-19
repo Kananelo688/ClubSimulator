@@ -1,7 +1,7 @@
 package clubSimulation;
 
 import java.awt.Color;
-
+import java.time.LocalTime;
 import javax.swing.JLabel;
 
 // Simple Thread class to update the display of a PeopleCounter object
@@ -30,6 +30,8 @@ public class CounterDisplay  implements Runnable {
         		inside.setForeground(Color.ORANGE);
         	}
         	else inside.setForeground(Color.BLACK);
+            ClubSimulation.currentTime=LocalTime.now();  
+            ClubSimulation.time.setText("Time:"+ClubSimulation.currentTime.format(ClubSimulation.formatter));
         	inside.setText("Inside: " + score.getInside() + "    "); 
             waiting.setText("Waiting:" +  score.getWaiting()+ "    " );
             left.setText("Left:" + score.getLeft()+ "    " ); 

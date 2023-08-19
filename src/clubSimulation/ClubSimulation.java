@@ -10,6 +10,8 @@ import java.awt.event.ActionListener;
 import java.util.Random;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
 public class ClubSimulation {
 	static int noClubgoers=20;
@@ -34,20 +36,35 @@ public class ClubSimulation {
 
     //my code
     public static boolean startBPressed=false;//flag that checks if the user pressed the start button
-    public static boolean paused=false;// flag to monitor if the user has pressed the button pause button
-    
+    public static AtomicBoolean paused=new AtomicBoolean(false);// flag to monitor if the user has pressed the button pause button
+    public static LocalTime currentTime;
+    public static  DateTimeFormatter formatter;
+    public static String formattedTime;
+    public static JLabel time;
+    private static JButton pauseB;
+    private static AndreBarman barman;
 
     //inner class that handles all events fired by the buttons
     private static class ButtonEvents implements ActionListener{
             
         public void actionPerformed(ActionEvent e){
-                if(e.getActionCommand().equalsIgnoreCase("Start")){startBPressed=true;}
+                if(e.getActionCommand().equalsIgnoreCase("Start"))
+                {
+                  AndreBarman.latch.countDown();
+                  Clubgoer.latch.countDown(); // release the latch
+                 //  startBPressed=true;
+                 }
                else if(e.getActionCommand().equalsIgnoreCase("Pause")){
-                    if(paused){
-                        paused=false;
+                    synchronized(paused)
+                    {
+                        if(paused.get()){
+                        pauseB.setText("Pause");
+                        paused.set(false);
                         return;
                     }
-                    paused=true;
+                    pauseB.setText("Resume");
+                    paused.set(true);                    
+                    }
                  }
                 else if (e.getActionCommand().equalsIgnoreCase("Quit")) System.exit(0);                    
                 
@@ -67,20 +84,22 @@ public class ClubSimulation {
  	    
 		clubView = new ClubView(peopleLocations, clubGrid, exits);
 		clubView.setSize(frameX,frameY);
-	    g.add(clubView);
-	    
+        clubView.setBarpersonLocation(barman.getAndreLocation());
+	    g.add(clubView);   
 	    //add all the counters to the panel
 	    JPanel txt = new JPanel();
 	    txt.setLayout(new BoxLayout(txt, BoxLayout.LINE_AXIS)); 
 	    JLabel maxAllowed =new JLabel("Max: " + tallys.getMax() + "    ");
 	    JLabel caught =new JLabel("Inside: " + tallys.getInside() + "    ");
 	    JLabel missed =new JLabel("Waiting:" + tallys.getWaiting()+ "    ");
-	    JLabel scr =new JLabel("Left club:" + tallys.getLeft()+ "    ");    
+	    JLabel scr =new JLabel("Left club:" + tallys.getLeft()+ "    ");   
+        time=new JLabel("Time: "+formattedTime); 
 	    txt.add(maxAllowed);
 	    txt.add(caught);
 	    txt.add(missed);
 	    txt.add(scr);
 	    g.add(txt);
+        txt.add(time);
 	    counterDisplay = new CounterDisplay(caught, missed,scr,tallys);      //thread to update score
        
 	    //Add start, pause and exit buttons
@@ -90,38 +109,24 @@ public class ClubSimulation {
         
 		// add the listener to the jbutton to handle the "pressed" event
         startB.addActionListener(new ButtonEvents());
-        /*
-		startB.addActionListener(new ActionListener() {
-		    public void actionPerformed(ActionEvent e)  {
-			    	  	startBPressed=true;// set the start button flag true when the user presses the button  	  
-		    }
-		   });
-			*/
-			final JButton pauseB = new JButton("Pause");;
-			
-			// add the listener to the jbutton to handle the "pressed" event
+ 
+			pauseB = new JButton();
+            pauseB.setText("Pause");
+            pauseB.setActionCommand("Pause");
             pauseB.addActionListener(new ButtonEvents());
-            /*
-			pauseB.addActionListener(new ActionListener() {
-		      public void actionPerformed(ActionEvent e) {
-		    		if(paused){ paused=false;return;} // set the flag to false to resume simulation and return (don't execute block underneath)
-                    else paused=true; // set paused flag to true if it was initially set to false (initially not paused)	
-		      }
-		    });*/
+         
+
 			
 		    JButton endB = new JButton("Quit");
 				// add the listener to the jbutton to handle the "pressed" event
                 endB.addActionListener(new ButtonEvents());
-                /*
-				endB.addActionListener(new ActionListener() {
-			      public void actionPerformed(ActionEvent e) {
-			    	  	System.exit(0);
-			      }
-			    });*/
+     
+
 
 		b.add(startB);
 		b.add(pauseB);
 		b.add(endB);
+      
 		
 		g.add(b);
     	
@@ -145,11 +150,14 @@ public class ClubSimulation {
 		
 		//hardcoded exit doors
 		int [] exit = {0,(int) gridY/2-1};  //once-cell wide door on left
-				
+		Clubgoer.latch=new CountDownLatch(2);// give coundown latch which will be released when the user pressed the "Start" button.
 	    tallys = new PeopleCounter(max); //counters for people inside and outside club
 		clubGrid = new ClubGrid(gridX, gridY, exit,tallys); //setup club with size and exits and maximum limit for people    
 		Clubgoer.club = clubGrid; //grid shared with class
-	   
+        currentTime=LocalTime.now();
+        formatter = DateTimeFormatter.ofPattern("HH:mm:ss");    
+	    formattedTime = currentTime.format(formatter);
+        
 	    peopleLocations = new PeopleLocation[noClubgoers];
 		patrons = new Clubgoer[noClubgoers];
 		
@@ -160,7 +168,9 @@ public class ClubSimulation {
         		int movingSpeed=(int)(Math.random() * (maxWait-minWait)+minWait); //range of speeds for customers
     			patrons[i] = new Clubgoer(i,peopleLocations[i],movingSpeed);
     		}
-		           
+		barman=new AndreBarman(-10,(int)(Math.random()*(maxWait-minWait)+minWait));
+        barman.setLocation(new PeopleLocation(-10));//set location of Andre        
+        barman.start();
 		setupGUI(frameX, frameY,exit);  //Start Panel thread - for drawing animation
         //start all the threads
 		Thread t = new Thread(clubView); 

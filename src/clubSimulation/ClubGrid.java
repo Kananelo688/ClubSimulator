@@ -72,12 +72,13 @@ public class ClubGrid {
 		return true;
 	}
 	//You need to check if limit of people have been exeeded before(and wait if that the case) // you need to lock! spin-wait. 
-	synchronized public GridBlock enterClub(PeopleLocation myLocation) throws InterruptedException  {
+	synchronized public GridBlock enterClub(PeopleLocation myLocation) throws InterruptedException{
+        counter.personArrived();
         while(counter.overCapacity()){
-            Thread.sleep(10); // wait and sleep for 0.01s before checking capacity again        
-        } 
+            this.wait();        
+        }
 		entrance.get(myLocation.getID());
-		counter.personEntered(); //add to counter
+	    counter.personEntered(); //add to counter
 		myLocation.setLocation(entrance);
 		myLocation.setInRoom(true);
 		return entrance;
@@ -109,11 +110,12 @@ public class ClubGrid {
 	} 
 	
 
-	public  void leaveClub(GridBlock currentBlock,PeopleLocation myLocation)   {
+	synchronized public void leaveClub(GridBlock currentBlock,PeopleLocation myLocation)   {
 			currentBlock.release();
 			counter.personLeft(); //add to counter
 			myLocation.setInRoom(false);
-			entrance.notifyAll();
+        //wrap invocation to notifyAll() in synchronized block to avoid the IllegalMonitorStateException. 		
+    	this.notifyAll();
 	}
 
 	public GridBlock getExit() {
@@ -135,10 +137,6 @@ public class ClubGrid {
 	public int getBar_y() {
 		return bar_y;
 	}
-    //Added Methods
-    synchronized public void incrWaighting(){
-        counter.personArrived();} //add to counter of people waiting
-
 }
 
 
