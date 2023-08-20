@@ -64,7 +64,7 @@ public class  AndreBarman extends Thread{
             if(dist<0){
                for(int i=1;i<=Math.abs(dist);i++){
                    checkPause();
-                   sleep(1000);//wait a bit
+                   sleep(100);//wait a bit
                   // if(!club.inPatronArea(andreGrid.getX()+1,andreGrid.getY())){continue;}
                    andreGrid=club.move(andreGrid,1,0,andreLocation,true);                                  
                 }
@@ -76,7 +76,7 @@ public class  AndreBarman extends Thread{
             }else if(dist>0){
                  for(int i=1;i<=dist;i++){
                    checkPause();
-                    sleep(1000);//wait a bit
+                    sleep(100);//wait a bit
                   // if(!club.inPatronArea(andreGrid.getX()-1,andreGrid.getY())){continue;} 
                    andreGrid=club.move(andreGrid,-1,0,andreLocation,true);                                  
                 }
