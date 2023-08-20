@@ -25,10 +25,7 @@ public class GridBlock {
 		this(exitBlock,refreshBlock,danceBlock);
 		coords = new int [] {x,y};
 	}
-    synchronized void setY(int y){coords[1]=y;}
-    synchronized public boolean servedDrink(){return served;}
-    synchronized public void markServed(){served=true;}
-    synchronized  public void markUnserved(){served=false;}
+
     public void setIsOccupied(int i){isOccupied=i;}
 	
 	synchronized public  int getX() {return coords[0];}  

@@ -15,7 +15,8 @@ public class  AndreBarman extends Thread{
     private int speed;//andre's speed on the bar counter ( He doesn't stand on the same spot)
     private Random rand; 
     public static CountDownLatch latch;
-    public static ArrayList<GridBlock> thirstyThreads;// array that stores threads that are currently thirsty
+    private boolean done=false;
+    public static ArrayList<Clubgoer> thirstyThreads;// array that stores threads that are currently thirsty
     //Defualt constructor
     public AndreBarman(int ID,int speed)
     {   
@@ -26,14 +27,11 @@ public class  AndreBarman extends Thread{
         thirstyThreads=new ArrayList<>();//
         latch=new CountDownLatch(1);
     }
-    //synchronized to prevent simultenous access by multiple threaads
-    synchronized public ArrayList<GridBlock> getThirstyThreads() {return thirstyThreads;}
-    synchronized public void addToThirsty(GridBlock block){thirstyThreads.add(block);}
     public void setGridBlock(GridBlock block){andreGrid=block;}
     public void setLocation(PeopleLocation location){andreLocation=location;}
     public void setClub(ClubGrid grid){club=grid;}
     public boolean andreInRoom(){return inRoom.get();}
-    public PeopleLocation getAndreLocation(){return andreLocation;}
+    synchronized public PeopleLocation getAndreLocation(){return andreLocation;}
     public GridBlock getAndreGrid(){return andreGrid;}
     private void checkPause() throws InterruptedException
     {
@@ -56,59 +54,58 @@ public class  AndreBarman extends Thread{
     private void headToBar() throws InterruptedException {
 		int x_mv= rand.nextInt(3)-1;	//	-1,0 or 1
 		int y_mv= Integer.signum(club.getBar_y()-andreGrid.getY());//-1,0 or 1
-		andreGrid=club.move(andreGrid,x_mv,y_mv,andreLocation); //head toward bar
+		andreGrid=club.move(andreGrid,x_mv,y_mv,andreLocation,true); //head toward bar
 	}
-    private void serveDrinks(GridBlock blockToServe){
-		int x_mv= Integer.signum(blockToserve.getX()-andreGrid.getX());//x_mv is -1,0 or 1
-		int y_mv= Integer.signum(andreGrid.getY()-andreGrid.getY());//keep andre y-coodinate constant
-		andreGrid=club.move(andreGrid,x_mv,y_mv,andreLocation);
-        sleep(speed/3);// wait a bit      
+    private void serveDrinks() throws InterruptedException{
+        if(thirstyThreads.size()!=0){
+            Clubgoer serve= thirstyThreads.remove(0);
+            int dist=andreGrid.getX()-serve.currentBlock.getX();
+            if(dist<0){
+               for(int i=1;i<Math.abs(dist)+2;i++){
+                   checkPause();
+                   sleep(speed/3);//wait a bit
+                   if(!club.inPatronArea(andreGrid.getX()+1,andreGrid.getY())){continue;}
+                   andreGrid=club.move(andreGrid,1,0,andreLocation,true);                                  
+                }
+                checkPause();
+                sleep(5000);//serves drinks for 3 seconds
+                serve.markServed();//release the thread so it does its thing again                            
+            }else if(dist>0){
+                 for(int i=1;i<dist;i++){
+                   checkPause();
+                    sleep(speed/3);//wait a bit
+                   if(!club.inPatronArea(andreGrid.getX()-1,andreGrid.getY())){continue;} 
+                   andreGrid=club.move(andreGrid,-1,0,andreLocation,true);                                  
+                }
+                checkPause();
+                sleep(5000);//serves drinks
+                serve.markServed();//release the thread so it does its thing again     
+            }else{
+                checkPause();
+                sleep(5000);//serves drinks
+                serve.markServed();//release the thread so it does its thing again                
+            }
+         }         
     }
     public void run(){
             try{
-            startSim(); 
-			checkPause();
-            andreLocation.setArrived(); 
-            checkPause(); //check whethere have been asked to pause
-			enterClub();
-            boolean unchecked=true;
-            while(true){
+                startSim(); 
+			    checkPause();
+                andreLocation.setArrived(); 
+                checkPause(); //check whethere have been asked to pause
+			    enterClub();
+                boolean unchecked=true;
+                while(!andreGrid.isBar()){
+                        sleep(speed/2);
+                        checkPause();
+                        headToBar(); 
+                }
+                ClubGrid.isBarMan.set(false);
+                Clubgoer.latch.countDown();   
+                while(true){
                     checkPause();
-                    if(!andreGrid.isBar()){
-                        sleep(speed/3);
-                        System.out.println("Andre heading towards the Bar");//for debug
-                        headToBar();
-                        continue;                    
-                    }
-                    if(andreGrid.isBar() && unchecked){
-                        System.out.println("Andre arrived at the Bar");//for debug
-                        club.isBarMan.set(false);unchecked=false;
-                        Clubgoer.latch.countDown();// open the entrace after getting to the bar
-                        //andreGrid.setY(club.getBar_y());//fix the y-coordibate of Andre at the counter                    
-                    }
-                    if(thirstyThreads.size()!=0){
-                            checkPause();
-                            //System.out.println("Andre ready to serve Bar");//for debug
-                            int andreX=andreGrid.getX();
-                            int targetX=thirstyThreads.get(0).getX();
-                            int x_mv1=-1,x_mv2=1;
-                            if(andreX>targetX){
-                                  serveDrinks(GridBlock thirstyThreads.get(0)); 
-                                  checkPause();                     
-                            }
-                            else if(andreX<targetX){
-                                serveDrinks(thirstyThreads.get(0));
-                                checkPause();                          
-                            }else{
-                                //System.out.println("Andre serving thread in block with x-coordnate: "+targetX);//for debug
-                                checkPause();
-                                sleep(1000); // sleep for 1s to symbolize srving of drinks
-                                GridBlock served=thirstyThreads.remove(0);
-                                served.markServed();                          
-                            }
-                    }                
-            }
-             
+                    serveDrinks();       
+                }             
             }
             catch(InterruptedException e1) {}
           

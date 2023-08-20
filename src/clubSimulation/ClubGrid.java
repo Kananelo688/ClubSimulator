@@ -17,7 +17,7 @@ public class ClubGrid {
 	private final static int minY =5;//minimum y dimension
 	public static AtomicBoolean andre; //checks if andrew has entered the gate
 	private PeopleCounter counter;
-	public AtomicBoolean isBarMan;//check if Andrew has arrived at the Bar
+	public static AtomicBoolean isBarMan;//check if Andrew has arrived at the Bar
 	ClubGrid(int x, int y, int [] exitBlocks,PeopleCounter c) throws InterruptedException {
 		if (x<minX) x=minX; //minimum x
 		if (y<minY) y=minY; //minimum x
@@ -85,7 +85,7 @@ public class ClubGrid {
 		myLocation.setInRoom(true);
 		return entrance;
 	}
-	synchronized public GridBlock move(GridBlock currentBlock,int step_x, int step_y,PeopleLocation myLocation) throws InterruptedException {  //try to move in 
+	synchronized public GridBlock move(GridBlock currentBlock,int step_x, int step_y,PeopleLocation myLocation,boolean isAndrew) throws InterruptedException {  //try to move in 
 		
 		int c_x= currentBlock.getX();
 		int c_y= currentBlock.getY();
@@ -101,7 +101,7 @@ public class ClubGrid {
 
 		if ((new_x==currentBlock.getX())&&(new_y==currentBlock.getY())) //not actually moving
 			return currentBlock;
-		if(new_y==bar_y && !isBarMan.get()){new_y=bar_y-1;} //Threads shouldn't move to the Counter
+		if(new_y==bar_y && !isAndrew){new_y=bar_y-1;} //Threads shouldn't move to the Counter
 		GridBlock newBlock = Blocks[new_x][new_y];
       
 		

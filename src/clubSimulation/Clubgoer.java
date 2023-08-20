@@ -22,7 +22,7 @@ public class Clubgoer extends Thread {
 	private boolean thirsty;
 	private boolean wantToLeave;
 	private int ID; //thread ID 
-
+    private boolean served;
     public static CountDownLatch latch; // A count down latch to make all threads weight untill
 
 	
@@ -33,8 +33,10 @@ public class Clubgoer extends Thread {
 		inRoom=false; //not in room yet
 		thirsty=true; //thirsty when arrive
 		wantToLeave=false;	 //want to stay when arrive
+        served=false;
 		rand=new Random();
 	}
+    public void markServed(){served=true;}
 	
 	//getter
 	public  boolean inRoom() {
@@ -54,6 +56,7 @@ public class Clubgoer extends Thread {
 
 	//check to see if user pressed pause button
     //Should halt the process if button is pressed
+    public void setBarmanPosition(PeopleLocation location){barmanLocation=location;}
 	private void checkPause() throws InterruptedException
      {
         
@@ -72,19 +75,18 @@ public class Clubgoer extends Thread {
     }
 	
 	//get drink at bar
-		private void getDrink() throws InterruptedException {
-		    if(currentBlock.getY()==club.getBar_y()-1){
-                System.out.println("Thread-"+ID+" Added to the queue od thirty threads");//for debug
-                AndreBarman.thirstyThreads.add(currentBlock); // add the current block in the array and wait until served
-                while(!currentBlock.servedDrink()){
-                      ///System.out.println("Thread-"+ID+" Waiting to be served");//for debug
-                      sleep(100);// wait until you are served (andreBarman thread will notify this when served)                 
+		private void getDrink() throws InterruptedException{
+                sleep(movingSpeed/5);//wait a bit;
+                if(currentBlock.getY()==club.getBar_y()-1)//when at teh counter (not the Bar)
+	            {       checkPause();
+                        AndreBarman.thirstyThreads.add(this);// add the thread to waiting list
+                        while(!served){
+                               sleep(100); // wait until served.
+                        }
+                        checkPause();
+                        thirsty=false;
                 }
-                System.out.println("Thread-"+ID+"served now going to dance");//for debug
-                thirsty=false;
-                currentBlock.markUnserved();
-            }
-           sleep(movingSpeed/4);// sleep a bit before heading
+                
 		}
 	//--------------------------------------------------------
 	//DO NOT CHANGE THE CODE BELOW HERE - it is not necessary
@@ -100,7 +102,7 @@ public class Clubgoer extends Thread {
 	private void headToBar() throws InterruptedException {
 		int x_mv= rand.nextInt(3)-1;	//	-1,0 or 1
 		int y_mv= Integer.signum(club.getBar_y()-1-currentBlock.getY());//-1,0 or 1(Threads are not allowed on the Bar Counter (only the Barman)
-		currentBlock=club.move(currentBlock,x_mv,y_mv,myLocation); //head toward bar
+		currentBlock=club.move(currentBlock,x_mv,y_mv,myLocation,false); //head toward bar
 		//System.out.println("Thread "+this.ID + " moved toward bar to position: " + currentBlock.getX()  + " " +currentBlock.getY() );
 		sleep(movingSpeed/2);  //wait a bit
 	}
@@ -109,7 +111,7 @@ public class Clubgoer extends Thread {
 		GridBlock exit= club.getExit();
 		int x_mv= Integer.signum(exit.getX()-currentBlock.getX());//x_mv is -1,0 or 1
 		int y_mv= Integer.signum(exit.getY()-currentBlock.getY());//-1,0 or 1
-		currentBlock=club.move(currentBlock,x_mv,y_mv,myLocation); 
+		currentBlock=club.move(currentBlock,x_mv,y_mv,myLocation,false); 
 		//System.out.println("Thread "+this.ID + " moved to towards exit: " + currentBlock.getX()  + " " +currentBlock.getY() );
 		sleep(movingSpeed);//wait a bit
 	}
@@ -121,7 +123,7 @@ public class Clubgoer extends Thread {
 			int y_mv=Integer.signum(1-x_mv);
 			
 			for(int j=0;j<4;j++) { //do four fast dance steps
-					currentBlock=club.move(currentBlock,x_mv,y_mv, myLocation);	
+					currentBlock=club.move(currentBlock,x_mv,y_mv, myLocation,false);	
 					sleep(movingSpeed/5); 
 					x_mv*=-1;
 					y_mv*=-1;
@@ -134,7 +136,7 @@ public class Clubgoer extends Thread {
 			for(int i=0;i<2;i++) { ////wander for two steps
 				int x_mv= rand.nextInt(3)-1; //-1,0 or 1
 				int y_mv= Integer.signum(-rand.nextInt(4)+1); //-1,0 or 1  (more likely to head away from bar)
-				currentBlock=club.move(currentBlock,x_mv,y_mv, myLocation);	
+				currentBlock=club.move(currentBlock,x_mv,y_mv, myLocation,false);	
 				sleep(movingSpeed); 
 			}
 		}
@@ -174,8 +176,8 @@ public class Clubgoer extends Thread {
 				}
 				else if (thirsty) {
 					sleep(movingSpeed/5);  //wait a bit		
-					if (currentBlock.getY()==club.getBar_y()-1) {//Threads should get drink infront of the counter, and not on the counter.
-						getDrink();//getDrink() should make threads wait until they are served the drinks by the  Andre the Barman.
+					if (currentBlock.getY()==club.getBar_y()-1) {//get drink when at the counter
+						getDrink();//
 						//System.out.println("Thread "+this.ID + " got drink");
 					}
 					else {
