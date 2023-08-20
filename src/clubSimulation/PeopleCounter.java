@@ -6,14 +6,17 @@ public class PeopleCounter {
 	private AtomicInteger peopleInside; //counter for patrons inside club
 	private AtomicInteger peopleLeft; //counter for patrons who have left the club
 	private AtomicInteger maxPeople; //maximum patrons allowed in the club at one time
-    
+    private AtomicInteger served;
 	PeopleCounter(int max) {
 		peopleOutSide= new AtomicInteger(0);
 		peopleInside=new AtomicInteger(0);
 		peopleLeft=new AtomicInteger(0);
 		maxPeople=new AtomicInteger(max);
+        served=new AtomicInteger(0);
 	}
-	//all these methods should be synchronized	
+	//all these methods should be synchronized
+    synchronized public int getServed() {return served.get();}
+    synchronized public void incrServed(){served.getAndIncrement();}	
 	synchronized public int getWaiting() {
 		return peopleOutSide.get();
 	}

@@ -3,8 +3,8 @@ package clubSimulation;
 
 import java.util.Random;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 /*
  This is the basic ClubGoer Thread class, representing the patrons at the club
  */
@@ -12,7 +12,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Clubgoer extends Thread {
 	
 	public static ClubGrid club; //shared club
-
 	GridBlock currentBlock;
 	private Random rand; 
 	private int movingSpeed;
@@ -38,7 +37,6 @@ public class Clubgoer extends Thread {
 		rand=new Random();
 	}
     public void markServed(){served=true;}
-	
 	//getter
 	public  boolean inRoom() {
 		return inRoom;
@@ -52,18 +50,19 @@ public class Clubgoer extends Thread {
 	
 	//getter
 	public   int getSpeed() { return movingSpeed; }
-
+    
 	//setter
     public static void setBarmanPosition(PeopleLocation location){barmanLocation=location;}
 	//check to see if user pressed pause button
     //Should halt the process if button is pressed
-    
+    private void waitAtEntrance() throws InterruptedException{
+        while(club.whereEntrance().occupied()){sleep(movingSpeed);}        
+    }
 	private void checkPause() throws InterruptedException
      {
         
 		while(ClubSimulation.paused.get()){
-            sleep(movingSpeed);// sleep thread for 0.1s before next check if pause pressed
-  
+            sleep(movingSpeed/5);// sleep thread for 0.1s before next check if pause pressed
         }  	
         
     } 
@@ -80,27 +79,28 @@ public class Clubgoer extends Thread {
 		private void getDrink() throws InterruptedException{    
                 //System.out.println("Thread-"+ID+" going to get drinks");
                 sleep(movingSpeed/5);//wait a bit;
+                AndreBarman.speeder.getAndIncrement();//increase serving speed of Andre
                 if(currentBlock.getY()==club.getBar_y()-1)//when at teh counter (not the Bar)
-	            {       checkPause();  
+	            {       
+                 checkPause();  
                  AndreBarman.addToThirsty(this);// add the thread to waiting list
+                 
                  while(!served){
                      sleep(movingSpeed); // wait until served.
                  }
                  checkPause();
                  thirsty=false;                        
-                }
-                
+                }   
 		}
 	//--------------------------------------------------------
 	//DO NOT CHANGE THE CODE BELOW HERE - it is not necessary
 	//clubgoer enters club
 	public void enterClub() throws InterruptedException {
-		currentBlock = club.enterClub(myLocation);  //enter through entrance
-		inRoom=true;
-		//System.out.println("Thread "+this.ID + " entered club at position: " + currentBlock.getX()  + " " +currentBlock.getY() );
-		sleep(movingSpeed/2);  //wait a bit at door
+            currentBlock = club.enterClub(myLocation);  //enter through entrance
+		    inRoom=true;
+		    //System.out.println("Thread "+this.ID + " entered club at position: " + currentBlock.getX()  + " " +currentBlock.getY() );
+		    sleep(movingSpeed);  //wait a bit at door
 	}
-	
 	//go to bar
 	private void headToBar() throws InterruptedException {
 		int x_mv= rand.nextInt(3)-1;	//	-1,0 or 1
@@ -121,12 +121,12 @@ public class Clubgoer extends Thread {
 	//dancing in the club
 	private void dance() throws InterruptedException {		
 		for(int i=0;i<3;i++) { //sequence of 3
-
 			int x_mv= rand.nextInt(3)-1; //-1,0 or 1
 			int y_mv=Integer.signum(1-x_mv);
 			
 			for(int j=0;j<4;j++) { //do four fast dance steps
-					currentBlock=club.move(currentBlock,x_mv,y_mv, myLocation,false);	
+					currentBlock=club.move(currentBlock,x_mv,y_mv, myLocation,false);
+                    currentBlock.setIsOccupied(ID);	
 					sleep(movingSpeed/5); 
 					x_mv*=-1;
 					y_mv*=-1;
@@ -139,7 +139,8 @@ public class Clubgoer extends Thread {
 			for(int i=0;i<2;i++) { ////wander for two steps
 				int x_mv= rand.nextInt(3)-1; //-1,0 or 1
 				int y_mv= Integer.signum(-rand.nextInt(4)+1); //-1,0 or 1  (more likely to head away from bar)
-				currentBlock=club.move(currentBlock,x_mv,y_mv, myLocation,false);	
+				currentBlock=club.move(currentBlock,x_mv,y_mv, myLocation,false);
+                currentBlock.setIsOccupied(ID);	
 				sleep(movingSpeed); 
 			}
 		}
@@ -156,6 +157,7 @@ public class Clubgoer extends Thread {
 			checkPause();
 			myLocation.setArrived();
 			checkPause(); //check whethere have been asked to pause
+            waitAtEntrance();
 			enterClub();
 			while (inRoom) {	
 				checkPause(); //check every step
@@ -197,7 +199,6 @@ public class Clubgoer extends Thread {
 				wander();
 				//System.out.println("Thread "+this.ID + " wandering about " );
 				}
-				
 			}
 			//System.out.println("Thread "+this.ID + " is done");
 

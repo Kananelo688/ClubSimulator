@@ -26,7 +26,7 @@ public class GridBlock {
 		coords = new int [] {x,y};
 	}
 
-    public void setIsOccupied(int i){isOccupied=i;}
+    synchronized public void setIsOccupied(int i){isOccupied=i;}
 	
 	synchronized public  int getX() {return coords[0];}  
 	

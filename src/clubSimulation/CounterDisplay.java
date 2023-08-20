@@ -12,14 +12,15 @@ public class CounterDisplay  implements Runnable {
 	JLabel waiting;
 	JLabel inside;
 	JLabel left;
-		
-	CounterDisplay(JLabel w, JLabel i, JLabel l, PeopleCounter score) {
+    JLabel served;
+	CounterDisplay(JLabel w, JLabel i, JLabel l,JLabel s ,PeopleCounter score) {
         this.waiting=w;
         this.inside = i;
         this.left = l;
+        this.served=s;
         this.score=score;
     }
-	
+    	
 	public void run() { //this thread just updates the display of the counters
         while (true) {
         	//test changes colour when at limit and over limit of people inside
@@ -35,6 +36,7 @@ public class CounterDisplay  implements Runnable {
         	inside.setText("Inside: " + score.getInside() + "    "); 
             waiting.setText("Waiting:" +  score.getWaiting()+ "    " );
             left.setText("Left:" + score.getLeft()+ "    " ); 
+            served.setText("Drinks Served:"+score.getServed()+"    "); 
         }
     }
 }

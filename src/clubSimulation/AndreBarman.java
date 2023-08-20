@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.lang.Thread;
 import java.util.Random;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 public class  AndreBarman extends Thread{
     
     private GridBlock andreGrid;// Andre's grid block
@@ -16,7 +17,10 @@ public class  AndreBarman extends Thread{
     private Random rand; 
     public static CountDownLatch latch;
     private static ArrayList<Clubgoer> thirstyThreads;// array that stores threads that are currently thirsty
+    private PeopleCounter counter;
+    public static AtomicInteger speeder;//determines how fast Andre serves drinks
     //Defualt constructor
+ 
     public AndreBarman(int ID,int speed)
     {   
         this.ID=ID;
@@ -25,6 +29,7 @@ public class  AndreBarman extends Thread{
         rand=new Random();
         thirstyThreads=new ArrayList<>();//
         latch=new CountDownLatch(1);
+        speeder=new AtomicInteger(1);
     }
     synchronized public static void addToThirsty(Clubgoer apt){thirstyThreads.add(apt);};
     public void setGridBlock(GridBlock block){andreGrid=block;}
@@ -40,6 +45,7 @@ public class  AndreBarman extends Thread{
         }  	
         
     } 
+    public void setPeopleCounter(PeopleCounter c){counter=c;}
     private void startSim() throws InterruptedException
      {
             latch.await(); // wait untill the gate is released.
@@ -60,37 +66,44 @@ public class  AndreBarman extends Thread{
     private void serveDrinks() throws InterruptedException{
         if(thirstyThreads.size()!=0){
             Clubgoer serve= thirstyThreads.remove(0);
+        
             int dist=andreGrid.getX()-serve.currentBlock.getX();
             if(dist<0){
                for(int i=1;i<=Math.abs(dist);i++){
                    checkPause();
-                   sleep(100);//wait a bit
+                   sleep(100/speeder.get());//wait a bit
                   // if(!club.inPatronArea(andreGrid.getX()+1,andreGrid.getY())){continue;}
                    andreGrid=club.move(andreGrid,1,0,andreLocation,true);                                  
                 }
                  checkPause();
                // System.out.println("Serving thread-"+serve.getID()+"Drinks...");//for debug
-                sleep(2000);//serves drinks
-                serve.markServed();//release the thread so it does its thing again  
+                sleep(200/speeder.get());//serves drinks
+                serve.markServed();//release the thread so it does its thing again 
+                counter.incrServed();  
+                speeder.getAndDecrement();
                // System.out.println("Done.");                             
             }else if(dist>0){
                  for(int i=1;i<=dist;i++){
                    checkPause();
-                    sleep(100);//wait a bit
+                    sleep(100/speeder.get());//wait a bit
                   // if(!club.inPatronArea(andreGrid.getX()-1,andreGrid.getY())){continue;} 
                    andreGrid=club.move(andreGrid,-1,0,andreLocation,true);                                  
                 }
                 checkPause();
                // System.out.println("Serving thread-"+serve.getID()+" Drinks...");
-                sleep(2000);//serves drinks
+                sleep(200/speeder.get());//serves drinks
                 serve.markServed();//release the thread so it does its thing again  
+                counter.incrServed(); 
+                speeder.getAndDecrement();
                 //System.out.println("Done.");   
             }else{
                  checkPause();
                 //System.out.println("Serving thread-"+serve.getID()+" Drinks...");
-                sleep(2000);//serves drinks
-                serve.markServed();//release the thread so it does its thing again  
-                //System.out.println("Done.");                 
+                sleep(200/speeder.get());//serves drinks
+                serve.markServed();//release the thread so it does its thing again 
+                counter.incrServed(); 
+                //System.out.println("Done.");  
+                speeder.getAndDecrement();               
             }
          }        
     }
@@ -103,9 +116,9 @@ public class  AndreBarman extends Thread{
                 checkPause(); //check whethere have been asked to pause
 			    enterClub();
                 while(!andreGrid.isBar()){
-                        sleep(speed/2);
-                        checkPause();
-                        headToBar(); 
+                      sleep(speed/2);
+                      checkPause();
+                      headToBar(); 
                 }
                 ClubGrid.isBarMan.set(false);
                 Clubgoer.latch.countDown();   

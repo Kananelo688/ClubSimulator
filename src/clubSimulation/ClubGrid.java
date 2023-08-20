@@ -49,26 +49,26 @@ public class ClubGrid {
 		}
 	}
 	
-		public  int getMaxX() {
+		synchronized public  int getMaxX() {
 		return x;
 	}
 	
-		public int getMaxY() {
+        synchronized public int getMaxY() {
 		return y;
 	}
     
 
-	public GridBlock whereEntrance() { 
+	synchronized public GridBlock whereEntrance() { 
 		return entrance;
 	}
 
-	public  boolean inGrid(int i, int j) {
+	synchronized public  boolean inGrid(int i, int j) {
 		if ((i>=x) || (j>=y) ||(i<0) || (j<0)) 
 			return false;
 		return true;
 	}
 	
-	public  boolean inPatronArea(int i, int j) {
+	synchronized public  boolean inPatronArea(int i, int j) {
 		if ((i>=x) || (j>bar_y) ||(i<0) || (j<0)) 
 			return false;
 		return true;
@@ -90,24 +90,18 @@ public class ClubGrid {
 		
 		int c_x= currentBlock.getX();
 		int c_y= currentBlock.getY();
-		
 		int new_x = c_x+step_x; //new block x coordinates
 		int new_y = c_y+step_y; // new block y  coordinates
-		
 		//restrict i and j to grid
 		if (!inPatronArea(new_x,new_y)) {
 			//Invalid move to outside  - ignore
 			return currentBlock;
 		}
-
 		if ((new_x==currentBlock.getX())&&(new_y==currentBlock.getY())) //not actually moving
 			return currentBlock;
 		if(new_y==bar_y && !isAndrew){new_y=bar_y-1;} //Threads shouldn't move to the Counter
 		GridBlock newBlock = Blocks[new_x][new_y];
-      
-		
 		if (!newBlock.get(myLocation.getID())) return currentBlock; //stay where you are
-			
 		currentBlock.release(); //must release current block
 		myLocation.setLocation(newBlock);
 		return newBlock;
@@ -122,7 +116,7 @@ public class ClubGrid {
     	this.notifyAll();
 	}
 
-	public GridBlock getExit() {
+	synchronized public GridBlock getExit() {
 		return exit;
 	}
 
@@ -138,7 +132,7 @@ public class ClubGrid {
 		this.exit = exit;
 	}
 
-	public int getBar_y() {
+	synchronized public int getBar_y() {
 		return bar_y;
 	}
 }

@@ -94,13 +94,15 @@ public class ClubSimulation {
 	    JLabel missed =new JLabel("Waiting:" + tallys.getWaiting()+ "    ");
 	    JLabel scr =new JLabel("Left club:" + tallys.getLeft()+ "    ");   
         time=new JLabel("Time: "+formattedTime); 
+        JLabel served=new JLabel("Drinks Served:"+tallys.getServed()+"      ");
+        txt.add(served);
 	    txt.add(maxAllowed);
 	    txt.add(caught);
 	    txt.add(missed);
 	    txt.add(scr);
 	    g.add(txt);
         txt.add(time);
-	    counterDisplay = new CounterDisplay(caught, missed,scr,tallys);      //thread to update score
+	    counterDisplay = new CounterDisplay(caught, missed,scr,served,tallys);      //thread to update score
        
 	    //Add start, pause and exit buttons
 	    JPanel b = new JPanel();
@@ -171,7 +173,7 @@ public class ClubSimulation {
 		barman=new AndreBarman(Integer.MAX_VALUE,(int)(Math.random()*(maxWait-minWait)+minWait));
         barman.setLocation(new PeopleLocation(Integer.MAX_VALUE));//set location of Andre  
         barman.setClub(clubGrid);      
-        
+        barman.setPeopleCounter(tallys);
 		setupGUI(frameX, frameY,exit);  //Start Panel thread - for drawing animation
         //start all the threads
 		Thread t = new Thread(clubView); 
