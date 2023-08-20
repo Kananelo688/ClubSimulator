@@ -16,7 +16,7 @@ public class Clubgoer extends Thread {
 	GridBlock currentBlock;
 	private Random rand; 
 	private int movingSpeed;
-	private PeopleLocation barmanLocation;
+	private static PeopleLocation barmanLocation;
 	private PeopleLocation myLocation;
 	private boolean inRoom;
 	private boolean thirsty;
@@ -32,6 +32,7 @@ public class Clubgoer extends Thread {
 		this.myLocation = loc; //for easy lookups
 		inRoom=false; //not in room yet
 		thirsty=true; //thirsty when arrive
+        served=false;
 		wantToLeave=false;	 //want to stay when arrive
         served=false;
 		rand=new Random();
@@ -53,19 +54,20 @@ public class Clubgoer extends Thread {
 	public   int getSpeed() { return movingSpeed; }
 
 	//setter
-
+    public static void setBarmanPosition(PeopleLocation location){barmanLocation=location;}
 	//check to see if user pressed pause button
     //Should halt the process if button is pressed
-    public void setBarmanPosition(PeopleLocation location){barmanLocation=location;}
+    
 	private void checkPause() throws InterruptedException
      {
         
 		while(ClubSimulation.paused.get()){
-            sleep(100);// sleep thread for 0.1s before next check if pause pressed
+            sleep(movingSpeed);// sleep thread for 0.1s before next check if pause pressed
   
         }  	
         
-    }   
+    } 
+    public int getID(){return ID;}  
     /**
     All threads should wait untill start button is pressed.   
     */
@@ -75,16 +77,17 @@ public class Clubgoer extends Thread {
     }
 	
 	//get drink at bar
-		private void getDrink() throws InterruptedException{
+		private void getDrink() throws InterruptedException{    
+                //System.out.println("Thread-"+ID+" going to get drinks");
                 sleep(movingSpeed/5);//wait a bit;
                 if(currentBlock.getY()==club.getBar_y()-1)//when at teh counter (not the Bar)
-	            {       checkPause();
-                        AndreBarman.thirstyThreads.add(this);// add the thread to waiting list
-                        while(!served){
-                               sleep(100); // wait until served.
-                        }
-                        checkPause();
-                        thirsty=false;
+	            {       checkPause();  
+                 AndreBarman.addToThirsty(this);// add the thread to waiting list
+                 while(!served){
+                     sleep(movingSpeed); // wait until served.
+                 }
+                 checkPause();
+                 thirsty=false;                        
                 }
                 
 		}
@@ -157,10 +160,11 @@ public class Clubgoer extends Thread {
 			while (inRoom) {	
 				checkPause(); //check every step
 				if((!thirsty)&&(!wantToLeave)) {
-					if (rand.nextInt(100) >95) 
+					if (rand.nextInt(100) >95){ 
 						thirsty = true; //thirsty every now and then
-					else if (rand.nextInt(100) >98) 
-						wantToLeave=true; //at some point want to leave
+                        served=false;
+					}else if (rand.nextInt(100) >98) {
+						wantToLeave=true; }//at some point want to leave
 				}
 				
 				if (wantToLeave) {	 //leaving overides thirsty	

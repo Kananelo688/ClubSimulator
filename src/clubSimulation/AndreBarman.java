@@ -15,8 +15,7 @@ public class  AndreBarman extends Thread{
     private int speed;//andre's speed on the bar counter ( He doesn't stand on the same spot)
     private Random rand; 
     public static CountDownLatch latch;
-    private boolean done=false;
-    public static ArrayList<Clubgoer> thirstyThreads;// array that stores threads that are currently thirsty
+    private static ArrayList<Clubgoer> thirstyThreads;// array that stores threads that are currently thirsty
     //Defualt constructor
     public AndreBarman(int ID,int speed)
     {   
@@ -27,6 +26,7 @@ public class  AndreBarman extends Thread{
         thirstyThreads=new ArrayList<>();//
         latch=new CountDownLatch(1);
     }
+    synchronized public static void addToThirsty(Clubgoer apt){thirstyThreads.add(apt);};
     public void setGridBlock(GridBlock block){andreGrid=block;}
     public void setLocation(PeopleLocation location){andreLocation=location;}
     public void setClub(ClubGrid grid){club=grid;}
@@ -36,7 +36,7 @@ public class  AndreBarman extends Thread{
     private void checkPause() throws InterruptedException
     {
 		while(ClubSimulation.paused.get()){
-            sleep(100);// sleep thread for 0.1s before next check if pause pressed
+            sleep(speed);// sleep thread for 0.1s before next check if pause pressed
         }  	
         
     } 
@@ -47,6 +47,7 @@ public class  AndreBarman extends Thread{
     private void enterClub() throws InterruptedException {
         ClubGrid.andre.set(true);
 		andreGrid = club.enterClub(andreLocation);  //enter through entrance
+        //System.out.println("Andre's entrace dimensions: ("+andreGrid.getX()+","+andreGrid.getY()+")");
         ClubGrid.andre.set(false);    		
         inRoom.set(true);
         sleep(speed/3);
@@ -61,40 +62,46 @@ public class  AndreBarman extends Thread{
             Clubgoer serve= thirstyThreads.remove(0);
             int dist=andreGrid.getX()-serve.currentBlock.getX();
             if(dist<0){
-               for(int i=1;i<Math.abs(dist)+2;i++){
+               for(int i=1;i<=Math.abs(dist);i++){
                    checkPause();
-                   sleep(speed/3);//wait a bit
-                   if(!club.inPatronArea(andreGrid.getX()+1,andreGrid.getY())){continue;}
+                   sleep(1000);//wait a bit
+                  // if(!club.inPatronArea(andreGrid.getX()+1,andreGrid.getY())){continue;}
                    andreGrid=club.move(andreGrid,1,0,andreLocation,true);                                  
                 }
-                checkPause();
-                sleep(5000);//serves drinks for 3 seconds
-                serve.markServed();//release the thread so it does its thing again                            
+                 checkPause();
+               // System.out.println("Serving thread-"+serve.getID()+"Drinks...");//for debug
+                sleep(2000);//serves drinks
+                serve.markServed();//release the thread so it does its thing again  
+               // System.out.println("Done.");                             
             }else if(dist>0){
-                 for(int i=1;i<dist;i++){
+                 for(int i=1;i<=dist;i++){
                    checkPause();
-                    sleep(speed/3);//wait a bit
-                   if(!club.inPatronArea(andreGrid.getX()-1,andreGrid.getY())){continue;} 
+                    sleep(1000);//wait a bit
+                  // if(!club.inPatronArea(andreGrid.getX()-1,andreGrid.getY())){continue;} 
                    andreGrid=club.move(andreGrid,-1,0,andreLocation,true);                                  
                 }
                 checkPause();
-                sleep(5000);//serves drinks
-                serve.markServed();//release the thread so it does its thing again     
+               // System.out.println("Serving thread-"+serve.getID()+" Drinks...");
+                sleep(2000);//serves drinks
+                serve.markServed();//release the thread so it does its thing again  
+                //System.out.println("Done.");   
             }else{
-                checkPause();
-                sleep(5000);//serves drinks
-                serve.markServed();//release the thread so it does its thing again                
+                 checkPause();
+                //System.out.println("Serving thread-"+serve.getID()+" Drinks...");
+                sleep(2000);//serves drinks
+                serve.markServed();//release the thread so it does its thing again  
+                //System.out.println("Done.");                 
             }
-         }         
+         }        
     }
     public void run(){
             try{
                 startSim(); 
 			    checkPause();
+                sleep(speed);//take time to get to the bar
                 andreLocation.setArrived(); 
                 checkPause(); //check whethere have been asked to pause
 			    enterClub();
-                boolean unchecked=true;
                 while(!andreGrid.isBar()){
                         sleep(speed/2);
                         checkPause();
@@ -104,7 +111,8 @@ public class  AndreBarman extends Thread{
                 Clubgoer.latch.countDown();   
                 while(true){
                     checkPause();
-                    serveDrinks();       
+                    serveDrinks();  
+                    sleep(speed/2);     
                 }             
             }
             catch(InterruptedException e1) {}

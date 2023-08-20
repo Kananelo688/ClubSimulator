@@ -155,7 +155,7 @@ public class ClubSimulation {
 		clubGrid = new ClubGrid(gridX, gridY, exit,tallys); //setup club with size and exits and maximum limit for people    
 		Clubgoer.club = clubGrid; //grid shared with class
         currentTime=LocalTime.now();
-        formatter = DateTimeFormatter.ofPattern("HH:mm:ss");    
+        formatter = DateTimeFormatter.ofPattern("HH:mm");    
 	    formattedTime = currentTime.format(formatter);
         
 	    peopleLocations = new PeopleLocation[noClubgoers];
@@ -171,7 +171,7 @@ public class ClubSimulation {
 		barman=new AndreBarman(Integer.MAX_VALUE,(int)(Math.random()*(maxWait-minWait)+minWait));
         barman.setLocation(new PeopleLocation(Integer.MAX_VALUE));//set location of Andre  
         barman.setClub(clubGrid);      
-        barman.start();
+        
 		setupGUI(frameX, frameY,exit);  //Start Panel thread - for drawing animation
         //start all the threads
 		Thread t = new Thread(clubView); 
@@ -181,7 +181,8 @@ public class ClubSimulation {
       	s.start();
       	for (int i=0;i<noClubgoers;i++) {
 			patrons[i].start();
-		}    
+		}
+        barman.start();    
  	}
 
 }

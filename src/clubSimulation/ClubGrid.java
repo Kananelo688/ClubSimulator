@@ -75,7 +75,7 @@ public class ClubGrid {
 	}
 	//You need to check if limit of people have been exeeded before(and wait if that the case) // you need to lock! spin-wait. 
 	synchronized public GridBlock enterClub(PeopleLocation myLocation) throws InterruptedException{        
-        if(!andre.get())counter.personArrived();
+        if(!andre.get()) counter.personArrived();
         while(counter.overCapacity()){
             this.wait();        
         }
@@ -83,6 +83,7 @@ public class ClubGrid {
 	    if (!andre.get()) counter.personEntered(); //add to counter
 		myLocation.setLocation(entrance);
 		myLocation.setInRoom(true);
+      //  System.out.println("Actual dimensions of the entrace: "+"("+entrance.getX()+","+entrance.getY()+")");
 		return entrance;
 	}
 	synchronized public GridBlock move(GridBlock currentBlock,int step_x, int step_y,PeopleLocation myLocation,boolean isAndrew) throws InterruptedException {  //try to move in 
