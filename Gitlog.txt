@@ -1,0 +1,100 @@
+commit 8832ad5613477c633c431079c62d1bd6da38bb28
+Author: Kananelo Chabeli <kchabeli688@gmail.com>
+Date:   Sun Aug 20 13:04:05 2023 +0200
+
+    Finalised everything
+
+commit 022b6ec484e25a4d06ccb790cade6be6f4fcbeda
+Author: Kananelo Chabeli <kchabeli688@gmail.com>
+Date:   Sun Aug 20 10:23:22 2023 +0200
+
+    Modified Bar Man
+
+commit 445c3cbb18b98ff224a765af0ec2d1edf62cf946
+Author: Kananelo Chabeli <kchabeli688@gmail.com>
+Date:   Sun Aug 20 05:36:09 2023 +0200
+
+    Adre finalised
+
+commit c88df46ff09ed717876bc4f23e4b0545ef899a3f
+Author: Kananelo Chabeli <kchabeli688@gmail.com>
+Date:   Sun Aug 20 03:28:18 2023 +0200
+
+    Got Andre Barman to serve Drinks
+
+commit 23ad2f95d04293756a4cc32096cf45e1c67087ba
+Author: Kananelo Chabeli <kchabeli688@gmail.com>
+Date:   Sun Aug 20 00:21:18 2023 +0200
+
+    added Andrew class
+
+commit 0570ab6785029df0ff07171b3bf7bcc1afa1714e
+Author: Kananelo Chabeli <kchabeli688@gmail.com>
+Date:   Sat Aug 19 07:34:53 2023 +0200
+
+    completed basic requirements
+
+commit 7b02a6ec3345713a8125af2949b475ccff74c8a4
+Author: Kananelo Chabeli <kchabeli688@gmail.com>
+Date:   Wed Aug 16 08:35:53 2023 +0200
+
+    Added classes
+
+commit 78b308571ac89c668451b1bad74ef7d332511810
+Author: Kananelo V Chabeli <137335001+Kananelo688@users.noreply.github.com>
+Date:   Wed Aug 16 05:47:29 2023 +0200
+
+    Initial commit
+commit 36f6125a2f0e67ed0e70e21bb65d127dae7cbbfb
+Author: Kananelo V Chabeli <137335001+Kananelo688@users.noreply.github.com>
+Date:   Mon Aug 21 06:56:20 2023 +0200
+
+    Update README.md
+
+commit 8832ad5613477c633c431079c62d1bd6da38bb28
+Author: Kananelo Chabeli <kchabeli688@gmail.com>
+Date:   Sun Aug 20 13:04:05 2023 +0200
+
+    Finalised everything
+
+commit 022b6ec484e25a4d06ccb790cade6be6f4fcbeda
+Author: Kananelo Chabeli <kchabeli688@gmail.com>
+Date:   Sun Aug 20 10:23:22 2023 +0200
+
+    Modified Bar Man
+
+commit 445c3cbb18b98ff224a765af0ec2d1edf62cf946
+Author: Kananelo Chabeli <kchabeli688@gmail.com>
+Date:   Sun Aug 20 05:36:09 2023 +0200
+
+    Adre finalised
+
+commit c88df46ff09ed717876bc4f23e4b0545ef899a3f
+Author: Kananelo Chabeli <kchabeli688@gmail.com>
+Date:   Sun Aug 20 03:28:18 2023 +0200
+
+    Got Andre Barman to serve Drinks
+
+commit 23ad2f95d04293756a4cc32096cf45e1c67087ba
+Author: Kananelo Chabeli <kchabeli688@gmail.com>
+Date:   Sun Aug 20 00:21:18 2023 +0200
+
+    added Andrew class
+
+commit 0570ab6785029df0ff07171b3bf7bcc1afa1714e
+Author: Kananelo Chabeli <kchabeli688@gmail.com>
+Date:   Sat Aug 19 07:34:53 2023 +0200
+
+    completed basic requirements
+
+commit 7b02a6ec3345713a8125af2949b475ccff74c8a4
+Author: Kananelo Chabeli <kchabeli688@gmail.com>
+Date:   Wed Aug 16 08:35:53 2023 +0200
+
+    Added classes
+
+commit 78b308571ac89c668451b1bad74ef7d332511810
+Author: Kananelo V Chabeli <137335001+Kananelo688@users.noreply.github.com>
+Date:   Wed Aug 16 05:47:29 2023 +0200
+
+    Initial commit

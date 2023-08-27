@@ -7,24 +7,69 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 /*
  This is the basic ClubGoer Thread class, representing the patrons at the club
+
+
+@author: M.M Kuttel
+@edited by: Kananelo Chabeli
  */
 
 public class Clubgoer extends Thread {
-	
+	/**
+        A shared club for the simulation. synchronization mechanism need to be employed on this object.    
+    */
 	public static ClubGrid club; //shared club
+    /**
+        GridBlock object that represents this Clubgoer's current grid block in the club    
+    */
 	GridBlock currentBlock;
-	private Random rand; 
+    /**
+        Random object for generating some random behavoiur between of threads
+    */
+	private Random rand;
+    /**
+        this Clubgoer's current speed in the club
+    */ 
 	private int movingSpeed;
+    /**
+            
+    */
 	private static PeopleLocation barmanLocation;
+    /**
+        PeopleLocation object that represent this Clubgoer's current location in the club    
+    */
 	private PeopleLocation myLocation;
+    /**
+        Boolean flag that determines if this Clubgoer is in the club or  not    
+    */
 	private boolean inRoom;
+    /**
+        Boolean flag that determines if this Clubgoer, is thirsty. When set to true, the thread  heads to he bar to get drinks    
+    */
 	private boolean thirsty;
+    /**
+        Boolean flag that determines if the thread want's to leave. Set at random        
+    */
 	private boolean wantToLeave;
+    /**
+        Integer that represents thsi Clubgoer's unique Identity number    
+    */
 	private int ID; //thread ID 
+    /**
+        Boolean flag that dertimines if this Thread ahs been served drinks
+    */
     private boolean served;
+    /**
+        CountDownLatch object that forces threads to wait before the user presses start AND the AndreBarman thread reach the bar blocks of the  club    
+    */
     public static CountDownLatch latch; // A count down latch to make all threads weight untill
 
-	
+	/**
+        Creates a new thread with given ID, Location and speed.
+        
+        @param: ID an integer that uniquely identifies threads in the class
+        @param: loc PeopleLocation object that defines th current locatio of the thread in the club
+        @param: speed an integer that represents the speed of the patron in the club
+    */    
 	Clubgoer( int ID,  PeopleLocation loc,  int speed) {
 		this.ID=ID;
 		movingSpeed=speed; //range of speeds for customers
@@ -36,28 +81,58 @@ public class Clubgoer extends Thread {
         served=false;
 		rand=new Random();
 	}
+    /**
+        Marks this Clubgoer served by setting boolean instance variable "served" to true.    
+    */
     public void markServed(){served=true;}
-	//getter
+	/**
+        Returns true if this Clubgoer is in the club, and false otherwise
+    */
 	public  boolean inRoom() {
 		return inRoom;
 	}
 	
-	//getter
+	/**
+        Returns current x-coordinate of this Clubgoer
+    
+        @return: an integer representing the current x-coordinate of the patron    
+    */
 	public   int getX() { return currentBlock.getX();}	
 	
-	//getter
+	/**
+        Returns current y-coordinate of this Clubgoer
+    
+        @return: an integer representing the current y-coordinate of the patron    
+    */
 	public   int getY() {	return currentBlock.getY();	}
 	
-	//getter
+	/**
+        Returns the speed of this Clubgoer.
+        
+        @return: an integer representing the thread's speed in the club    
+    */
 	public   int getSpeed() { return movingSpeed; }
-    
-	//setter
+   
+	/**
+            
+    */
     public static void setBarmanPosition(PeopleLocation location){barmanLocation=location;}
-	//check to see if user pressed pause button
-    //Should halt the process if button is pressed
+    /**
+        Forces this thread to wait if the entrance block is currently occupied. 
+        
+        @throw InterrupedExcepion when the Thread.sleep() method is interruped.
+        @see Thread.sleep()   
+    */
     private void waitAtEntrance() throws InterruptedException{
         while(club.whereEntrance().occupied()){sleep(movingSpeed);}        
     }
+    /**
+        Checks if the button is pressed and halts the movement of this Thread if so. (spin wait)
+        
+        @throw InterrupedExcepion when the Thread.sleep() method is interruped.
+        @see Thread.sleep()     
+    
+    */
 	private void checkPause() throws InterruptedException
      {
         
@@ -66,17 +141,31 @@ public class Clubgoer extends Thread {
         }  	
         
     } 
+    /**
+            Returns this thread's ID number
+            
+            @return: ID instance variable of the calling object.    
+    
+    */
     public int getID(){return ID;}  
     /**
-    All threads should wait untill start button is pressed.   
+        Forces All thread to wait, until the start button is pressed.
+ 
+        @throw InterrupedExcepion when the Thread.sleep() method is interruped.
+        @see Thread.sleep()   
     */
 	private void startSim() throws InterruptedException
      {
             latch.await(); // wait untill the gate is released.
     }
-	
-	//get drink at bar
-		private void getDrink() throws InterruptedException{    
+	/**
+        When this thread's instance variable <code>thirsty</code> is set to true, the calling thread heads to the bar by invoking this method,a and when it is onfron of the Bar, it waits there until Andreman serves drinks. If the thread waits for more than 5 seconds before being served,it oborts the mission of getting drink and will try again later. This is done to prevent deadlocks. 
+
+     @throw InterrupedExcepion when the Thread.sleep() method is interruped.
+        @see Thread.sleep()     
+            
+    */
+	private void getDrink() throws InterruptedException{    
                 //System.out.println("Thread-"+ID+" going to get drinks");
                 sleep(movingSpeed/5);//wait a bit;
                 AndreBarman.speeder.getAndIncrement();//increase serving speed of Andre
@@ -84,9 +173,12 @@ public class Clubgoer extends Thread {
 	            {       
                  checkPause();  
                  AndreBarman.addToThirsty(this);// add the thread to waiting list
-                 
+                 int checks=0;
                  while(!served){
+                     
+                     if(checks==10) break;
                      sleep(movingSpeed); // wait until served.
+                     checks++;
                  }
                  checkPause();
                  thirsty=false;                        
@@ -181,7 +273,7 @@ public class Clubgoer extends Thread {
 					}				 
 				}
 				else if (thirsty) {
-					sleep(movingSpeed/5);  //wait a bit		
+					//sleep(movingSpeed/5);  //wait a bit		
 					if (currentBlock.getY()==club.getBar_y()-1) {//get drink when at the counter
 						getDrink();//
 						//System.out.println("Thread "+this.ID + " got drink");
